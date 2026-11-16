@@ -24,15 +24,19 @@ import android.widget.TextView;
 public class OverlayService extends Service {
 
     private WindowManager wm;
-    private View bubble, panel;
+    private View bubble;
+    private View panel;
     private TextView effectText;
+
     private final Handler handler = new Handler();
     private final int green = Color.rgb(70, 255, 130);
 
     @Override
     public void onCreate() {
         super.onCreate();
+
         wm = (WindowManager) getSystemService(WINDOW_SERVICE);
+
         createNotification();
         createBubble();
     }
@@ -42,22 +46,27 @@ public class OverlayService extends Service {
 
         if (Build.VERSION.SDK_INT >= 26) {
             NotificationChannel nc = new NotificationChannel(
-                channel, "Deku Demo Panel",
+                channel,
+                "Deku Demo Panel",
                 NotificationManager.IMPORTANCE_LOW
             );
+
             getSystemService(NotificationManager.class)
                 .createNotificationChannel(nc);
         }
 
-        Notification.Builder b = Build.VERSION.SDK_INT >= 26
+        Notification.Builder builder =
+            Build.VERSION.SDK_INT >= 26
             ? new Notification.Builder(this, channel)
             : new Notification.Builder(this);
 
-        startForeground(11, b
+        Notification notification = builder
             .setContentTitle("DEKU DEMO PANEL")
             .setContentText("Painel visual ativado")
             .setSmallIcon(android.R.drawable.star_on)
-            .build());
+            .build();
+
+        startForeground(11, notification);
     }
 
     private GradientDrawable bg(int color) {
@@ -69,7 +78,9 @@ public class OverlayService extends Service {
     }
 
     private WindowManager.LayoutParams params(
-        int width, int height, int gravity
+        int width,
+        int height,
+        int gravity
     ) {
         int type = Build.VERSION.SDK_INT >= 26
             ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
@@ -77,9 +88,10 @@ public class OverlayService extends Service {
 
         WindowManager.LayoutParams p =
             new WindowManager.LayoutParams(
-                width, height, type,
-                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-                    | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
+                width,
+                height,
+                type,
+                WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
                 PixelFormat.TRANSLUCENT
             );
 
@@ -89,6 +101,7 @@ public class OverlayService extends Service {
 
     private void createBubble() {
         TextView b = new TextView(this);
+
         b.setText("DEKU");
         b.setTextColor(Color.BLACK);
         b.setTextSize(15);
@@ -97,18 +110,20 @@ public class OverlayService extends Service {
         b.setBackground(bg(green));
 
         WindowManager.LayoutParams p = params(
-            100, 55, Gravity.TOP | Gravity.START
+            100,
+            55,
+            Gravity.TOP | Gravity.START
         );
+
         p.x = 30;
         p.y = 250;
-
-        b.setOnClickListener(v -> togglePanel());
 
         b.setOnTouchListener(new View.OnTouchListener() {
             int sx, sy;
             float tx, ty;
             boolean moved;
 
+            @Override
             public boolean onTouch(View v, MotionEvent e) {
                 if (e.getAction() == MotionEvent.ACTION_DOWN) {
                     sx = p.x;
@@ -120,20 +135,27 @@ public class OverlayService extends Service {
                 }
 
                 if (e.getAction() == MotionEvent.ACTION_MOVE) {
-                    int dx = (int)(e.getRawX() - tx);
-                    int dy = (int)(e.getRawY() - ty);
-                    if (Math.abs(dx) > 8 || Math.abs(dy) > 8)
+                    int dx = (int) (e.getRawX() - tx);
+                    int dy = (int) (e.getRawY() - ty);
+
+                    if (Math.abs(dx) > 8 || Math.abs(dy) > 8) {
                         moved = true;
+                    }
+
                     p.x = sx + dx;
                     p.y = sy + dy;
+
                     wm.updateViewLayout(b, p);
                     return true;
                 }
 
                 if (e.getAction() == MotionEvent.ACTION_UP) {
-                    if (!moved) v.performClick();
+                    if (!moved) {
+                        togglePanel();
+                    }
                     return true;
                 }
+
                 return true;
             }
         });
@@ -143,8 +165,9 @@ public class OverlayService extends Service {
     }
 
     private void togglePanel() {
-        if (panel == null) createPanel();
-        else {
+        if (panel == null) {
+            createPanel();
+        } else {
             wm.removeView(panel);
             panel = null;
         }
@@ -164,10 +187,14 @@ public class OverlayService extends Service {
         layout.addView(title);
 
         String[] effects = {
-            "FULL COWLING", "DANGER SENSE",
-            "BLACKWHIP", "ONE FOR ALL",
-            "DETROIT SMASH", "FA JIN",
-            "GEARSHIFT", "DEKU DANCE"
+            "FULL COWLING",
+            "DANGER SENSE",
+            "BLACKWHIP",
+            "ONE FOR ALL",
+            "DETROIT SMASH",
+            "FA JIN",
+            "GEARSHIFT",
+            "DEKU DANCE"
         };
 
         for (String name : effects) {
@@ -184,16 +211,22 @@ public class OverlayService extends Service {
         layout.addView(close);
 
         panel = layout;
-        wm.addView(panel, params(
-            300, WindowManager.LayoutParams.WRAP_CONTENT,
-            Gravity.CENTER
-        ));
+
+        wm.addView(
+            panel,
+            params(
+                300,
+                WindowManager.LayoutParams.WRAP_CONTENT,
+                Gravity.CENTER
+            )
+        );
     }
 
     private void showEffect(String name) {
         if (effectText != null) {
-            try { wm.removeView(effectText); }
-            catch (Exception ignored) {}
+            try {
+                wm.removeView(effectText);
+            } catch (Exception ignored) {}
         }
 
         TextView t = new TextView(this);
@@ -205,15 +238,22 @@ public class OverlayService extends Service {
         t.setBackground(bg(Color.rgb(5, 20, 12)));
 
         effectText = t;
-        wm.addView(t, params(
-            WindowManager.LayoutParams.MATCH_PARENT,
-            100, Gravity.CENTER
-        ));
+
+        wm.addView(
+            effectText,
+            params(
+                WindowManager.LayoutParams.MATCH_PARENT,
+                100,
+                Gravity.CENTER
+            )
+        );
 
         handler.postDelayed(() -> {
             if (effectText == t) {
-                try { wm.removeView(t); }
-                catch (Exception ignored) {}
+                try {
+                    wm.removeView(t);
+                } catch (Exception ignored) {}
+
                 effectText = null;
             }
         }, 1800);
@@ -223,15 +263,30 @@ public class OverlayService extends Service {
     public void onDestroy() {
         handler.removeCallbacksAndMessages(null);
 
-        if (panel != null) wm.removeView(panel);
-        if (bubble != null) wm.removeView(bubble);
-        if (effectText != null) wm.removeView(effectText);
+        if (panel != null) {
+            wm.removeView(panel);
+            panel = null;
+        }
+
+        if (bubble != null) {
+            wm.removeView(bubble);
+            bubble = null;
+        }
+
+        if (effectText != null) {
+            wm.removeView(effectText);
+            effectText = null;
+        }
 
         super.onDestroy();
     }
 
     @Override
-    public int onStartCommand(Intent intent, int flags, int id) {
+    public int onStartCommand(
+        Intent intent,
+        int flags,
+        int startId
+    ) {
         return START_NOT_STICKY;
     }
 
