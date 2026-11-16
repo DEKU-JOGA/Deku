@@ -2,8 +2,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission
+        android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+
+    <uses-permission
+        android:name="android.permission.FOREGROUND_SERVICE" />
 
     <application
         android:allowBackup="true"
@@ -11,7 +14,7 @@
         android:theme="@android:style/Theme.Material.NoActionBar">
 
         <activity
-            android:name=".MainActivity"
+            android:name="com.example.dekudemo.MainActivity"
             android:exported="true">
 
             <intent-filter>
@@ -22,8 +25,9 @@
         </activity>
 
         <service
-            android:name=".OverlayService"
+            android:name="com.example.dekudemo.OverlayService"
             android:exported="false" />
 
     </application>
+
 </manifest>
